@@ -11,11 +11,15 @@ use crate::{WeightUnit, Weighted};
 /// Returns Err if any item is too large to fit in a bin.
 ///
 /// ```
-/// let items: Vec<u8> = (1..5).collect();
-/// let bins = bin_packing::algorithms::first_fit(5, items.iter().collect()).unwrap();
+/// use bin_packing::WeightedReference;
+/// let items: Vec<u8> = vec![1, 2, 3, 4];
+/// let bins = bin_packing::algorithms::first_fit(5, WeightedReference::collect_from(items.iter())).unwrap();
 /// assert_eq!(3, bins.len());
 /// ```
-pub fn first_fit<T: Weighted>(capacity: WeightUnit, items: Vec<&T>) -> Result<Vec<Vec<&T>>, Error> {
+pub fn first_fit<'a, T, R>(capacity: WeightUnit, items: Vec<R>) -> Result<Vec<Vec<&'a T>>, Error>
+where
+    R: Weighted<'a, T>,
+{
     let mut bins: Vec<Bin<T>> = Vec::new();
     'item_loop: for item in items {
         if item.weight() > capacity {
@@ -24,7 +28,7 @@ pub fn first_fit<T: Weighted>(capacity: WeightUnit, items: Vec<&T>) -> Result<Ve
         for bin in &mut bins {
             if bin.load + item.weight() <= bin.capacity {
                 bin.load += item.weight();
-                bin.contents.push(item);
+                bin.contents.push(item.reference());
                 continue 'item_loop;
             }
         }
@@ -33,7 +37,7 @@ pub fn first_fit<T: Weighted>(capacity: WeightUnit, items: Vec<&T>) -> Result<Ve
         let new_bin = Bin {
             capacity,
             load: item.weight(),
-            contents: vec![item],
+            contents: vec![item.reference()],
         };
         bins.push(new_bin);
     }
@@ -45,18 +49,24 @@ pub fn first_fit<T: Weighted>(capacity: WeightUnit, items: Vec<&T>) -> Result<Ve
 #[cfg(test)]
 mod tests {
     use crate::algorithms::first_fit;
+    use crate::{Weighted, WeightedReference};
+
+    /// Helper to avoid changing all my test setup as I figure out the API
+    fn vec_to_input(source: &[usize]) -> Vec<WeightedReference<usize>> {
+        WeightedReference::collect_from(source.iter())
+    }
 
     #[test]
     fn empty() {
         let input: Vec<usize> = Vec::new();
-        let bins = first_fit(1, input.iter().collect()).unwrap();
+        let bins = first_fit(1, vec_to_input(&input)).unwrap();
         assert!(bins.is_empty());
     }
 
     #[test]
     fn ordered() {
-        let input: Vec<usize> = (1..=4).collect();
-        let bins = first_fit(5, input.iter().collect()).unwrap();
+        let input: Vec<usize> = vec![1, 2, 3, 4];
+        let bins = first_fit(5, vec_to_input(&input)).unwrap();
         assert_eq!(vec![&1, &2], bins[0]);
         assert_eq!(vec![&3], bins[1]);
         assert_eq!(vec![&4], bins[2]);
@@ -65,6 +75,6 @@ mod tests {
     #[test]
     fn item_too_large() {
         let input: Vec<usize> = vec![2];
-        assert!(first_fit(1, input.iter().collect()).is_err());
+        assert!(first_fit(1, vec_to_input(&input)).is_err());
     }
 }
