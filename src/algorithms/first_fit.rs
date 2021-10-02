@@ -7,18 +7,21 @@ use crate::{WeightUnit, Weighted};
 /// has room, a new bin will be opened and placed at the end of the Vec of bins.
 /// <https://en.wikipedia.org/wiki/First-fit_bin_packing>
 ///
+/// # Errors
+/// Returns Err if any item is too large to fit in a bin.
+///
 /// ```
 /// let items: Vec<u8> = (1..5).collect();
-/// let bins = bin_packing::algorithms::first_fit(5, &items).unwrap();
+/// let bins = bin_packing::algorithms::first_fit(5, items.iter().collect()).unwrap();
 /// assert_eq!(3, bins.len());
 /// ```
-pub fn first_fit<T: Weighted>(capacity: WeightUnit, items: &[T]) -> Result<Vec<Vec<&T>>, Error> {
+pub fn first_fit<T: Weighted>(capacity: WeightUnit, items: Vec<&T>) -> Result<Vec<Vec<&T>>, Error> {
     let mut bins: Vec<Bin<T>> = Vec::new();
     'item_loop: for item in items {
         if item.weight() > capacity {
             return Err(ItemTooLargeError);
         }
-        for bin in bins.iter_mut() {
+        for bin in &mut bins {
             if bin.load + item.weight() <= bin.capacity {
                 bin.load += item.weight();
                 bin.contents.push(item);
@@ -32,7 +35,7 @@ pub fn first_fit<T: Weighted>(capacity: WeightUnit, items: &[T]) -> Result<Vec<V
             load: item.weight(),
             contents: vec![item],
         };
-        bins.push(new_bin)
+        bins.push(new_bin);
     }
 
     // Extract just the bin contents and return those.
@@ -46,14 +49,14 @@ mod tests {
     #[test]
     fn empty() {
         let input: Vec<usize> = Vec::new();
-        let bins = first_fit(1, &input).unwrap();
+        let bins = first_fit(1, input.iter().collect()).unwrap();
         assert!(bins.is_empty());
     }
 
     #[test]
     fn ordered() {
         let input: Vec<usize> = (1..=4).collect();
-        let bins = first_fit(5, &input).unwrap();
+        let bins = first_fit(5, input.iter().collect()).unwrap();
         assert_eq!(vec![&1, &2], bins[0]);
         assert_eq!(vec![&3], bins[1]);
         assert_eq!(vec![&4], bins[2]);
@@ -62,6 +65,6 @@ mod tests {
     #[test]
     fn item_too_large() {
         let input: Vec<usize> = vec![2];
-        assert!(first_fit(1, &input).is_err());
+        assert!(first_fit(1, input.iter().collect()).is_err());
     }
 }

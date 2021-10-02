@@ -13,7 +13,7 @@ pub trait Weighted {
     fn weight(&self) -> WeightUnit;
 }
 
-/// Default implementation for anything that can be converted into WeightUnit
+/// Default implementation for anything that can be converted into `WeightUnit`
 impl<T: Into<WeightUnit> + Copy> Weighted for T {
     fn weight(&self) -> WeightUnit {
         (*self).into()
@@ -27,7 +27,7 @@ mod tests {
     #[test]
     fn sandbox() {
         let items: Vec<u8> = (1..10).collect();
-        let bins = algorithms::first_fit(11, &items).unwrap();
+        let bins = algorithms::first_fit(11, items.iter().collect()).unwrap();
         println!("{:?}", bins);
     }
 }
