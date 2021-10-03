@@ -28,7 +28,7 @@ where
 }
 
 #[must_use]
-pub fn sort_descending<'a, T, R, I>(items: I) -> Vec<R>
+fn sort_descending<'a, T, R, I>(items: I) -> Vec<R>
 where
     I: Iterator<Item = R>,
     R: Weighted<'a, T>,

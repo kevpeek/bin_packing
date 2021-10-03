@@ -1,5 +1,7 @@
 use crate::WeightedReference;
 
+/// Trait for converting something into an `Iterator` of `Weighted`.
+/// The `weight_fn` will be applied to each element to produce that element's weight.
 pub(crate) trait AsWeighted<'a, T, F>
 where
     F: Fn(&T) -> usize,

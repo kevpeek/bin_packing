@@ -5,6 +5,7 @@ mod weighted_iterator;
 
 type WeightUnit = usize;
 
+/// Trait defining a weighted item. Bin packing algorithms pack `Weighted` into bins.
 pub trait Weighted<'a, T> {
     fn weight(&self) -> usize;
     fn reference(&self) -> &'a T;
@@ -41,6 +42,26 @@ impl<'a, T> Weighted<'a, T> for WeightedReference<'a, T> {
 mod tests {
     use crate::packing_algorithms_trait::PackingAlgorithms;
     use crate::weighted_iterator::AsWeighted;
+
+    #[test]
+    fn using_usize_directly() {
+        let numbers: Vec<usize> = vec![1, 2, 3, 4];
+        let bins = numbers.iter().first_fit(5).unwrap();
+        assert_eq!(3, bins.len());
+    }
+
+    #[test]
+    fn using_to_weighted() {
+        let numbers: Vec<&str> = vec!["hello", "world", "how", "are", "you"];
+        let bins = numbers.iter()
+            // Each items weight will be the length of the str.
+            .to_weighted(|it| it.len())
+            .first_fit_decreasing(11)
+            .unwrap();
+        assert_eq!(2, bins.len());
+    }
+
+
 
     #[test]
     fn sandbox() {
