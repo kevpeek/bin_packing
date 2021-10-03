@@ -66,7 +66,7 @@ mod tests {
     #[test]
     fn sandbox() {
         let words = vec!["hello", "world", "how", "are", "you"];
-        let bin_capacity = 11;
+        let bin_capacity = 9;
         let bins = words.iter()
             // Each items weight will be the length of the str.
             .to_weighted(|word| word.len())

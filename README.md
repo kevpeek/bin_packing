@@ -18,12 +18,12 @@ println!("{:?}", bins);
 For other types, simply provide a mapping function from an item to its weight.
 ```
 let words = vec!["hello", "world", "how", "are", "you"];
-let bin_capacity = 11;
+let bin_capacity = 9;
 let bins = words.iter()
     // Each items weight will be the length of the str.
     .to_weighted(|word| word.len())
     .first_fit_decreasing(bin_capacity)
     .unwrap();
 println!("{:?}", bins);
-// [["hello", "world"], ["how", "are", "you"]]
+// [["hello", "how"], ["world", "are"], ["you"]]
 ```
