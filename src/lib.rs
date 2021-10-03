@@ -5,24 +5,25 @@ mod weighted_iterator;
 
 type WeightUnit = usize;
 
-/// Trait defining a weighted item. Bin packing algorithms pack `Weighted` into bins.
+/// Trait defining a weighted item. Bin packing algorithms pack `Weighted` things into bins.
 pub trait Weighted<'a, T> {
     fn weight(&self) -> usize;
     fn reference(&self) -> &'a T;
 }
 
-// TODO -- can this be done for all T: Into<usize> ?
-impl<'a> Weighted<'a, usize> for &'a usize {
+/// A reference to anything that is `Into<usize>` + `Copy` can automatically be
+/// use as a `Weighted` by using itself for its weight.
+impl<'a, T: Into<usize> + Copy> Weighted<'a, T> for &'a T {
     fn weight(&self) -> usize {
-        **self
+        (**self).into()
     }
 
-    fn reference(&self) -> &'a usize {
+    fn reference(&self) -> &'a T {
         self
     }
 }
 
-/// Combines a reference to an item and the item's weight.
+/// Allow arbitrary values to be `Weighted` by combing a weight with a reference to the value.
 pub struct WeightedReference<'a, T> {
     weight: usize,
     reference: &'a T,
@@ -45,7 +46,7 @@ mod tests {
 
     #[test]
     fn using_usize_directly() {
-        let numbers: Vec<usize> = vec![1, 2, 3, 4];
+        let numbers: Vec<u8> = vec![1, 2, 3, 4];
         let bins = numbers.iter().first_fit(5).unwrap();
         assert_eq!(3, bins.len());
     }
@@ -53,15 +54,14 @@ mod tests {
     #[test]
     fn using_to_weighted() {
         let numbers: Vec<&str> = vec!["hello", "world", "how", "are", "you"];
-        let bins = numbers.iter()
+        let bins = numbers
+            .iter()
             // Each items weight will be the length of the str.
             .to_weighted(|it| it.len())
             .first_fit_decreasing(11)
             .unwrap();
         assert_eq!(2, bins.len());
     }
-
-
 
     #[test]
     fn sandbox() {

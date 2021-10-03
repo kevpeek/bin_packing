@@ -1,28 +1,26 @@
 use crate::WeightedReference;
+use std::iter::Map;
 
 /// Trait for converting something into an `Iterator` of `Weighted`.
 /// The `weight_fn` will be applied to each element to produce that element's weight.
 pub(crate) trait AsWeighted<'a, T, F>
 where
-    F: Fn(&T) -> usize,
+    F: 'a + Fn(&T) -> usize,
 {
-    fn to_weighted(self, weight_fn: F) -> std::vec::IntoIter<WeightedReference<'a, T>>;
+    fn to_weighted(self, weight_fn: F) -> Box<dyn Iterator<Item = WeightedReference<'a, T>> + 'a>;
 }
 
 impl<'a, T, I, F> AsWeighted<'a, T, F> for I
 where
-    I: Iterator<Item = &'a T>,
+    I: 'a + Iterator<Item = &'a T>,
     T: 'a,
-    F: Fn(&T) -> usize,
+    F: 'a + Fn(&T) -> usize,
 {
-    fn to_weighted(self, weight_fn: F) -> std::vec::IntoIter<WeightedReference<'a, T>> {
-        let items_vec: Vec<WeightedReference<'a, T>> = self
-            .map(|it| WeightedReference {
-                weight: weight_fn(it),
-                reference: it,
-            })
-            .collect();
-        items_vec.into_iter()
+    fn to_weighted(self, weight_fn: F) -> Box<dyn Iterator<Item = WeightedReference<'a, T>> + 'a> {
+        Box::new(self.map(move |it| WeightedReference {
+            weight: weight_fn(it),
+            reference: it,
+        }))
     }
 }
 
