@@ -1,7 +1,7 @@
 pub mod algorithms;
 pub mod errors;
+mod packing_algorithms_trait;
 mod weighted_iterator;
-mod weighted_reference;
 
 type WeightUnit = usize;
 
@@ -10,6 +10,7 @@ pub trait Weighted<'a, T> {
     fn reference(&self) -> &'a T;
 }
 
+// TODO -- can this be done for all T: Into<usize> ?
 impl<'a> Weighted<'a, usize> for &'a usize {
     fn weight(&self) -> usize {
         **self
@@ -26,14 +27,29 @@ pub struct WeightedReference<'a, T> {
     reference: &'a T,
 }
 
+impl<'a, T> Weighted<'a, T> for WeightedReference<'a, T> {
+    fn weight(&self) -> usize {
+        self.weight
+    }
+
+    fn reference(&self) -> &'a T {
+        self.reference
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::algorithms;
+    use crate::packing_algorithms_trait::PackingAlgorithms;
+    use crate::weighted_iterator::AsWeighted;
 
     #[test]
     fn sandbox() {
-        let items: Vec<usize> = (1..10).collect();
-        let bins = algorithms::first_fit_decreasing(11, items.iter()).unwrap();
+        let numbers: Vec<u64> = (1..10).collect();
+        let bins = numbers
+            .iter()
+            .to_weighted(|it| *it as usize)
+            .first_fit_decreasing(11)
+            .unwrap();
         println!("{:?}", bins);
     }
 }
