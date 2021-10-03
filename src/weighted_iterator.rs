@@ -1,5 +1,4 @@
 use crate::WeightedReference;
-use std::iter::Map;
 
 /// Trait for converting something into an `Iterator` of `Weighted`.
 /// The `weight_fn` will be applied to each element to produce that element's weight.
