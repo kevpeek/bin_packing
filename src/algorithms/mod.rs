@@ -12,22 +12,28 @@ struct Bin<'a, T> {
     contents: Vec<&'a T>,
 }
 
-/// Sorts the input in descending order and then applies first_fit.
-pub fn first_fit_decreasing<'a, T, R>(
+/// Sorts the input in descending order and then applies `first_fit`.
+///
+/// # Errors
+/// Returns Err if an item is too large to fit in a bin.
+pub fn first_fit_decreasing<'a, T, R, I>(
     capacity: WeightUnit,
-    items: Vec<R>,
+    items: I,
 ) -> Result<Vec<Vec<&'a T>>, Error>
 where
+    I: Iterator<Item = R>,
     R: Weighted<'a, T>,
 {
-    first_fit(capacity, sort_descending(items))
+    first_fit(capacity, sort_descending(items).into_iter())
 }
 
 #[must_use]
-pub fn sort_descending<'a, T, R>(mut items: Vec<R>) -> Vec<R>
+pub fn sort_descending<'a, T, R, I>(items: I) -> Vec<R>
 where
+    I: Iterator<Item = R>,
     R: Weighted<'a, T>,
 {
+    let mut items: Vec<R> = items.collect();
     items.sort_by_key(|it| Reverse(it.weight()));
     items
 }

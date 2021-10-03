@@ -12,12 +12,13 @@ use crate::{WeightUnit, Weighted};
 ///
 /// ```
 /// use bin_packing::WeightedReference;
-/// let items: Vec<u8> = vec![1, 2, 3, 4];
-/// let bins = bin_packing::algorithms::first_fit(5, WeightedReference::collect_from(items.iter())).unwrap();
+/// let items: Vec<usize> = vec![1, 2, 3, 4];
+/// let bins = bin_packing::algorithms::first_fit(5, items.iter()).unwrap();
 /// assert_eq!(3, bins.len());
 /// ```
-pub fn first_fit<'a, T, R>(capacity: WeightUnit, items: Vec<R>) -> Result<Vec<Vec<&'a T>>, Error>
+pub fn first_fit<'a, T, R, I>(capacity: WeightUnit, items: I) -> Result<Vec<Vec<&'a T>>, Error>
 where
+    I: Iterator<Item = R>,
     R: Weighted<'a, T>,
 {
     let mut bins: Vec<Bin<T>> = Vec::new();
@@ -49,24 +50,18 @@ where
 #[cfg(test)]
 mod tests {
     use crate::algorithms::first_fit;
-    use crate::{Weighted, WeightedReference};
-
-    /// Helper to avoid changing all my test setup as I figure out the API
-    fn vec_to_input(source: &[usize]) -> Vec<WeightedReference<usize>> {
-        WeightedReference::collect_from(source.iter())
-    }
 
     #[test]
     fn empty() {
         let input: Vec<usize> = Vec::new();
-        let bins = first_fit(1, vec_to_input(&input)).unwrap();
+        let bins = first_fit(1, input.iter()).unwrap();
         assert!(bins.is_empty());
     }
 
     #[test]
     fn ordered() {
         let input: Vec<usize> = vec![1, 2, 3, 4];
-        let bins = first_fit(5, vec_to_input(&input)).unwrap();
+        let bins = first_fit(5, input.iter()).unwrap();
         assert_eq!(vec![&1, &2], bins[0]);
         assert_eq!(vec![&3], bins[1]);
         assert_eq!(vec![&4], bins[2]);
@@ -75,6 +70,6 @@ mod tests {
     #[test]
     fn item_too_large() {
         let input: Vec<usize> = vec![2];
-        assert!(first_fit(1, vec_to_input(&input)).is_err());
+        assert!(first_fit(1, input.iter()).is_err());
     }
 }
