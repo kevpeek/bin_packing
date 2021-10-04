@@ -12,6 +12,25 @@ struct Bin<'a, T> {
     contents: Vec<&'a T>,
 }
 
+impl<'a, T> Bin<'a, T> {
+    fn new_from_item<W: Weighted<'a, T>>(capacity: usize, item: &W) -> Bin<'a, T> {
+        Bin {
+            capacity,
+            load: item.weight(),
+            contents: vec![item.reference()],
+        }
+    }
+
+    fn has_room_for<W: Weighted<'a, T>>(&self, item: &W) -> bool {
+        self.load + item.weight() <= self.capacity
+    }
+
+    fn add<W: Weighted<'a, T>>(&mut self, item: &W) {
+        self.load += item.weight();
+        self.contents.push(item.reference());
+    }
+}
+
 /// Sorts the input in descending order and then applies `first_fit`.
 ///
 /// # Errors

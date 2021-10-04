@@ -27,19 +27,14 @@ where
             return Err(ItemTooLargeError);
         }
         for bin in &mut bins {
-            if bin.load + item.weight() <= bin.capacity {
-                bin.load += item.weight();
-                bin.contents.push(item.reference());
+            if bin.has_room_for(&item) {
+                bin.add(&item);
                 continue 'item_loop;
             }
         }
 
         // We didn't find a bin with enough room, so add a new one.
-        let new_bin = Bin {
-            capacity,
-            load: item.weight(),
-            contents: vec![item.reference()],
-        };
+        let new_bin = Bin::new_from_item(capacity, &item);
         bins.push(new_bin);
     }
 
