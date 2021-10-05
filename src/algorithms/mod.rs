@@ -1,8 +1,10 @@
 mod first_fit;
+mod next_fit;
 
 use crate::errors::Error;
 use crate::{WeightUnit, Weighted};
 pub use first_fit::first_fit;
+pub use next_fit::next_fit;
 use std::cmp::Reverse;
 
 /// Internal struct representing the current contents and weight of a bin.
@@ -13,6 +15,13 @@ struct Bin<'a, T> {
 }
 
 impl<'a, T> Bin<'a, T> {
+    fn with_capacity(capacity: usize) -> Bin<'a, T> {
+        Bin {
+            capacity,
+            load: 0,
+            contents: Vec::new(),
+        }
+    }
     fn new_from_item<W: Weighted<'a, T>>(capacity: usize, item: &W) -> Bin<'a, T> {
         Bin {
             capacity,

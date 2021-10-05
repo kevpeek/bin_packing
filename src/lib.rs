@@ -67,7 +67,8 @@ mod tests {
     fn sandbox() {
         let words = vec!["hello", "world", "how", "are", "you"];
         let bin_capacity = 9;
-        let bins = words.iter()
+        let bins = words
+            .iter()
             // Each items weight will be the length of the str.
             .to_weighted(|word| word.len())
             .first_fit_decreasing(bin_capacity)
