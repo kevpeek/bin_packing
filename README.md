@@ -1,9 +1,10 @@
 # bin_packing
+
+![](https://github.com/kevpeek/bin_packing/workflows/Rust/badge.svg)
+
 Bin Packing Algorithms in Rust
 
 Implementation of various bin packing algorithms wrapped up in an easy to use API.
-
-![](https://github.com/kevpeek/bin_packing/workflows/Rust/badge.svg)
 
 ### Usage
 
