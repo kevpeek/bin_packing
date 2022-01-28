@@ -11,10 +11,13 @@ use crate::{WeightUnit, Weighted};
 /// Returns Err if any item is too large to fit in a bin.
 ///
 /// ```
-/// use bin_packing::WeightedReference;
+///# use bin_packing::WeightedReference;
+///# fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// let items: Vec<usize> = vec![1, 2, 3, 4];
 /// let bins = bin_packing::algorithms::first_fit(5, items.iter()).unwrap();
 /// assert_eq!(3, bins.len());
+///# Ok(())
+///# }
 /// ```
 pub fn first_fit<'a, T, R, I>(capacity: WeightUnit, items: I) -> Result<Vec<Vec<&'a T>>, Error>
 where
@@ -22,20 +25,18 @@ where
     R: Weighted<'a, T>,
 {
     let mut bins: Vec<Bin<T>> = Vec::new();
-    'item_loop: for item in items {
+    for item in items {
         if item.weight() > capacity {
             return Err(ItemTooLargeError);
         }
-        for bin in &mut bins {
-            if bin.has_room_for(&item) {
-                bin.add(&item);
-                continue 'item_loop;
+
+        match bins.iter_mut().find(|bin| bin.has_room_for(&item)) {
+            Some(bin) => bin.add(&item),
+            None => {
+                let new_bin = Bin::new_from_item(capacity, &item);
+                bins.push(new_bin);
             }
         }
-
-        // We didn't find a bin with enough room, so add a new one.
-        let new_bin = Bin::new_from_item(capacity, &item);
-        bins.push(new_bin);
     }
 
     // Extract just the bin contents and return those.

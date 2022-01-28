@@ -10,10 +10,13 @@ use crate::{WeightUnit, Weighted};
 /// Returns Err if any item is too large to fit in a bin.
 ///
 /// ```
-/// use bin_packing::WeightedReference;
+///# use bin_packing::WeightedReference;
+///# fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// let items: Vec<usize> = vec![1, 2, 3, 4];
-/// let bins = bin_packing::algorithms::next_fit(5, items.iter()).unwrap();
+/// let bins = bin_packing::algorithms::next_fit(5, items.iter())?;
 /// assert_eq!(3, bins.len());
+///# Ok(())
+///# }
 /// ```
 pub fn next_fit<'a, T, R, I>(capacity: WeightUnit, items: I) -> Result<Vec<Vec<&'a T>>, Error>
 where
